@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { listAllFood, addToCart, getCart } from '../api';
 import { ApiResponse, Food, Cart, AddToCartDto, RemoveFromCartDto } from '../types';
 import { useToken } from './TokenContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const FoodCatalog = () => {
   const navigate = useNavigate();
@@ -69,6 +69,9 @@ const FoodCatalog = () => {
 
   return (
     <div>
+      <Link to="/profile">
+        <button>Go to Profile</button>
+      </Link>
       <h2>Food Catalog</h2>
       <div>
         {foodItems.map((foodItem) => (

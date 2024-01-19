@@ -1,7 +1,7 @@
 import { ApiResponse } from './types';
 import { Credentials } from './types';
 import { useToken } from './components/TokenContext';
-import { FoodDto, Food, AddToCartDto, Cart, RemoveFromCartDto } from './types'
+import { FoodDto, Food, AddToCartDto, Cart, RemoveFromCartDto, RegisterDto, Customer, CustomerDto } from './types'
 
 const API_BASE_URL = 'https://localhost:7144/api';
 
@@ -208,5 +208,98 @@ export const clearCart = async (userName: string): Promise<ApiResponse<string>> 
         return { data };
     } catch (error) {
         return { error: 'Failed to clear cart' };
+    }
+};
+export const registerNewCustomer = async (newCustomer: RegisterDto): Promise<ApiResponse<string>> => {
+    try {
+        console.log(newCustomer);
+        const response = await fetch(`${API_BASE_URL}/Customer/register/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newCustomer),
+        });
+        console.log(newCustomer);
+        const data = await response.text();
+        console.log(data);
+        return {data};
+    } catch (error) {
+        return { error: 'Failed to register new customer' };
+    }
+};
+
+export const updateExistingCustomer = async (newCustomer: RegisterDto, token: string | null): Promise<ApiResponse<Customer>> => {
+    try {
+        console.log(newCustomer);
+        const response = await fetch(`${API_BASE_URL}/Customer/update/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(newCustomer),
+        });
+
+        const data = await response.json();
+        return { data };
+    } catch (error) {
+        return { error: 'Failed to update existing customer' };
+    }
+};
+
+export const deleteCustomer = async (creds: Credentials, token: string | null): Promise<ApiResponse<Customer>> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/Customer/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(creds),
+        });
+
+        const data = await response.json();
+        return { data };
+    } catch (error) {
+        return { error: 'Failed to delete customer' };
+    }
+};
+
+export const checkCustomer = async (userName: string, token: string | null): Promise<ApiResponse<void>> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/Customer/${userName}`, {
+            method: 'HEAD',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return { data: undefined };
+    } catch (error) {
+        return { error: 'Failed to check customer' };
+    }
+};
+
+export const depositMoney = async (userName: string | null, amount: number, token: string | null): Promise<ApiResponse<CustomerDto>> => {
+    try {
+        if (amount <= 0) {
+            return { error: 'Invalid deposit request.' };
+        }
+
+        const queryString = `userName=${encodeURIComponent(userName || '')}&amount=${encodeURIComponent(amount.toString())}`;
+
+        const response = await fetch(`${API_BASE_URL}/Customer/deposit?${queryString}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const data = await response.json();
+        console.log(data);
+        return { data };
+    } catch (error) {
+        return { error: 'Failed to deposit money' };
     }
 };

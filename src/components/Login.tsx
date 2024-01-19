@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { generateToken } from '../api';
-import { ApiResponse, Credentials } from '../types';
+import { generateToken, registerNewCustomer } from '../api';
+import { ApiResponse, Credentials, RegisterDto } from '../types';
 import { useToken } from './TokenContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ const Login = () => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
   const { setToken } = useToken();
   const handleLogin = async () => {
@@ -34,6 +35,10 @@ const Login = () => {
     }
   };
 
+  const handleRegisterNavigation = () => {
+    navigate('/register');
+  };
+
   return (
     <div>
       <h2>Login</h2>
@@ -50,6 +55,7 @@ const Login = () => {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button onClick={handleLogin}>Login</button>
+      <button onClick={handleRegisterNavigation}>Create Account</button>
     </div>
   );
 };
