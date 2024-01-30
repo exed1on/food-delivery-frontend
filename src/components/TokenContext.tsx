@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
 interface TokenContextProps {
   children: ReactNode;
@@ -13,8 +13,13 @@ interface TokenContextValue {
 const TokenContext = createContext<TokenContextValue | undefined>(undefined);
 
 const TokenProvider: React.FC<TokenContextProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(()=> localStorage.getItem('token') || null);
+  const [username, setUsername] = useState<string | null>(()=> localStorage.getItem('username') || null);
+
+  useEffect(() => {
+    localStorage.setItem('token', token || '');
+    localStorage.setItem('username', username || '');
+  }, [token, username]);
 
   const setTokenAndUsername = (newToken: string | null, newUsername: string | null) => {
     setToken(newToken);

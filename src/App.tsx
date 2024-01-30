@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import FoodCatalog from './components/FoodCatalog';
@@ -6,6 +5,7 @@ import Cart from './components/Cart';
 import { TokenProvider } from './components/TokenContext';
 import Profile from './components/Profile';
 import Register from './components/Register';
+import FoodManagement from './components/FoodManagement';
 
 function App() {
   return (
@@ -21,6 +21,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/food-management" element={<FoodManagement />} />
       </Routes>
     </Router>
     </TokenProvider>

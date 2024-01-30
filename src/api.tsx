@@ -1,4 +1,4 @@
-import { ApiResponse } from './types';
+import { ApiResponse, Order } from './types';
 import { Credentials } from './types';
 import { useToken } from './components/TokenContext';
 import { FoodDto, Food, AddToCartDto, Cart, RemoveFromCartDto, RegisterDto, Customer, CustomerDto } from './types'
@@ -46,11 +46,7 @@ export const listAllFood = async (): Promise<ApiResponse<Food[]>> => {
 };
 
 export const addFood = async (newFood: FoodDto, token: string | null): Promise<ApiResponse<Food>> => {
-    try {
-        if (!token) {
-            return { error: 'Token is missing' };
-        }
-
+    try {//
         const response = await fetch(`${API_BASE_URL}/Food/addFood`, {
             method: 'POST',
             headers: {
@@ -66,14 +62,13 @@ export const addFood = async (newFood: FoodDto, token: string | null): Promise<A
     }
 };
 
-export const updateFood = async (updatedFood: FoodDto): Promise<ApiResponse<Food>> => {
-    try {
-        const { token } = useToken();
+export const updateFood = async (updatedFood: FoodDto, token: string | null): Promise<ApiResponse<Food>> => {
+    try {//
         const response = await fetch(`${API_BASE_URL}/Food/updateFood`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`, // Include your JWT token here
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(updatedFood),
         });
@@ -84,39 +79,35 @@ export const updateFood = async (updatedFood: FoodDto): Promise<ApiResponse<Food
     }
 };
 
-export const deleteFood = async (foodIdToDelete: number): Promise<ApiResponse<string>> => {
-    try {
-        const { token } = useToken();
-        const response = await fetch(`${API_BASE_URL}/Food/deleteFood/${foodIdToDelete}`, {
+export const deleteFood = async (foodNameToDelete: string, token: string | null): Promise<ApiResponse<string>> => {
+    try {//
+        const response = await fetch(`${API_BASE_URL}/Food/deleteFood/${foodNameToDelete}`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
-        const data = await response.json();
+        const data = await response.text();
         return { data };
     } catch (error) {
         return { error: 'Failed to delete food' };
     }
 };
 
-export const checkFood = async (foodName: string): Promise<ApiResponse<void>> => {
-    try {
-        const { token } = useToken();
-        const response = await fetch(`${API_BASE_URL}/Food/${foodName}`, {
+export const checkAdminRightsForFood = async (token: string | null): Promise<void> => {
+    try {//
+        const response = await fetch(`${API_BASE_URL}/Food/rights`, {
             method: 'HEAD',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
-
-        if (response.ok) {
-            return { data: undefined };
-        } else {
-            return { error: 'Food not found' };
+        console.log(response);
+        if (!response.ok) {
+            throw new Error('You have no rights');
         }
     } catch (error) {
-        return { error: 'Failed to check food' };
+        throw new Error('Failed to check user rights');
     }
 };
 export const addToCart = async (addToCartDto: AddToCartDto, token: string | null): Promise<ApiResponse<Cart>> => {
@@ -124,7 +115,7 @@ export const addToCart = async (addToCartDto: AddToCartDto, token: string | null
         const response = await fetch(`${API_BASE_URL}/Cart/addToCart`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json', 
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(addToCartDto),
@@ -137,6 +128,48 @@ export const addToCart = async (addToCartDto: AddToCartDto, token: string | null
     }
 };
 
+export const getCustomerBalance = async (userName: string | null, token: string | null): Promise<ApiResponse<number>> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/Customer/balance/${userName}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { data };
+        } else {
+            const errorData = await response.json();
+            return { error: errorData.message || 'Failed to get customer balance' };
+        }
+    } catch (error) {
+        return { error: 'Failed to get customer balance' };
+    }
+};
+
+export const createOrder = async (customerUsername: string | null, token: string | null): Promise<ApiResponse<Order>> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/Order/createOrder?customerUsername=${customerUsername}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { data };
+        } else {
+            const errorData = await response.json();
+            return { error: errorData.message || 'Failed to create order' };
+        }
+    } catch (error) {
+        return { error: 'Failed to create order' };
+    }
+};
+
 export const getCart = async (userName: string | null, token: string | null): Promise<ApiResponse<Cart>> => {
     try {
         const response = await fetch(`${API_BASE_URL}/Cart/getCart/${userName}`, {
@@ -146,17 +179,18 @@ export const getCart = async (userName: string | null, token: string | null): Pr
             },
         });
 
+
         const data = await response.json();
+        
+        console.log(data);
         return { data };
     } catch (error) {
         return { error: 'Failed to get cart' };
     }
 };
 
-export const removeFromCart = async (removeFromCartDto: RemoveFromCartDto): Promise<ApiResponse<Cart>> => {
+export const removeFromCart = async (removeFromCartDto: RemoveFromCartDto, token: string | null): Promise<ApiResponse<Cart>> => {
     try {
-        const { token } = useToken();
-
         const response = await fetch(`${API_BASE_URL}/Cart/removeFromCart`, {
             method: 'DELETE',
             headers: {
@@ -173,10 +207,8 @@ export const removeFromCart = async (removeFromCartDto: RemoveFromCartDto): Prom
     }
 };
 
-export const updateCartItemQuantity = async (updateCartItemQuantityDto: AddToCartDto): Promise<ApiResponse<Cart>> => {
+export const updateCartItemQuantity = async (updateCartItemQuantityDto: AddToCartDto, token: string | null): Promise<ApiResponse<Cart>> => {
     try {
-        const { token } = useToken();
-
         const response = await fetch(`${API_BASE_URL}/Cart/updateCartItemQuantity`, {
             method: 'PUT',
             headers: {
@@ -193,10 +225,8 @@ export const updateCartItemQuantity = async (updateCartItemQuantityDto: AddToCar
     }
 };
 
-export const clearCart = async (userName: string): Promise<ApiResponse<string>> => {
+export const clearCart = async (userName: string | null, token: string | null): Promise<ApiResponse<string>> => {
     try {
-        const { token } = useToken();
-
         const response = await fetch(`${API_BASE_URL}/Cart/clearCart/${userName}`, {
             method: 'DELETE',
             headers: {
@@ -210,6 +240,7 @@ export const clearCart = async (userName: string): Promise<ApiResponse<string>> 
         return { error: 'Failed to clear cart' };
     }
 };
+
 export const registerNewCustomer = async (newCustomer: RegisterDto): Promise<ApiResponse<string>> => {
     try {
         console.log(newCustomer);
@@ -267,7 +298,7 @@ export const deleteCustomer = async (creds: Credentials, token: string | null): 
 };
 
 export const checkCustomer = async (userName: string, token: string | null): Promise<ApiResponse<void>> => {
-    try {
+    try {//
         const response = await fetch(`${API_BASE_URL}/Customer/${userName}`, {
             method: 'HEAD',
             headers: {

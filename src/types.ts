@@ -34,7 +34,7 @@ export interface AddToCartDto {
 }
 
 export interface RemoveFromCartDto {
-  userName: string;
+  userName: string | null;
   foodName: string;
 }
 export interface OrderItem {
